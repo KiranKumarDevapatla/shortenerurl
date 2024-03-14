@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const ShortUrl = require('./models/shortUrl');
 const User = require('./models/user'); // Importing the User model
 const session = require('express-session');
+require('dotenv').config();
 
 // Connecting to the database
-mongoose.connect('mongodb+srv://Kiran2601:3001@cluster0.oy8zxqn.mongodb.net/', {
+mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -19,7 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Session middleware setup
 app.use(session({
-    secret: 'your_secret_key',
+    secret: process.env.SECRET_KEY, 
     resave: false,
     saveUninitialized: false
 }));
