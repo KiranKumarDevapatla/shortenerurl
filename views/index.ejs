@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+    crossorigin="anonymous"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+  />
+  <title>URL Shrinker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .card-text a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .card-text a:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .list-group-item {
+      padding: 15px;
+      border: none;
+    }
+    .list-group-item:nth-child(odd) {
+      background-color: #f8f9fa;
+    }
+    .list-group-item i {
+      margin-right: 10px;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+    .btn-primary:hover {
+      background-color: #0069d9;
+      border-color: #0062cc;
+    } /* Additional CSS */
+    .form-inline {
+      margin-bottom: 20px;
+    }
+    .form-control {
+      width: 70%;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form action="/shortUrls" method="POST" class="my-4 form-inline">
+      <label for="fullUrl" class="sr-only">Url</label>
+      <input
+        required
+        placeholder="Enter Full URL"
+        type="url"
+        name="fullUrl"
+        id="fullUrl"
+        class="form-control col mr-2"
+      />
+      <input
+        placeholder="Desired Short URL"
+        type="text"
+        name="customAlias"
+        id="customAlias"
+        class="form-control col mr-2"
+      />
+      <button class="btn btn-success" type="submit">Shrink</button>
+    </form>
+    <!-- Add Logout Button -->
+    <form action="/logout" method="POST">
+      <button class="btn btn-danger" type="submit">Logout</button>
+    </form>
+    <div class="row">
+      <% shortUrls.forEach(shortUrl => { %>
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Full URL</h5>
+            <p class="card-text">
+              <a href="<%= shortUrl.full %>"><%= shortUrl.full %></a>
+            </p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <i class="fas fa-link"></i>
+              Short URL:
+              <a href="<%= shortUrl.short %>"><%= shortUrl.short %></a>
+            </li>
+            <li class="list-group-item">
+              <i class="fas fa-chart-bar"></i>
+              Clicks: <%= shortUrl.clicks %>
+            </li>
+            <li class="list-group-item">
+              <i class="fas fa-calendar-day"></i>
+              Created Date: <%= new
+              Date(shortUrl.createdDate).toLocaleDateString('en-US', {weekday:
+              'long', year: 'numeric', month: 'short', day: 'numeric'}) %>
+            </li>
+            <li class="list-group-item">
+              <button
+                onclick="downloadQR('<%= shortUrl.short %>')"
+                class="btn btn-primary"
+              >
+                <i class="fas fa-qrcode"></i>
+                Display QR Code
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+  <script>
+    function downloadQR(url) {
+      const link = document.createElement("a");
+      link.href = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${url}`;
+      link.download = "qr-code.png";
+      link.click();
+    }
+  </script>
+</body>
+</html>
