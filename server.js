@@ -1,16 +1,18 @@
+// Import necessary modules
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const ShortUrl = require('./models/shortUrl');
 const User = require('./models/user'); // Importing the User model
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
-// Connecting to the database
+// Connecting to the database with error handling
 mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-});
+}).catch(error => console.error('MongoDB connection error:', error));
 
 // Setting the view engine to EJS
 app.set('view engine', 'ejs');
@@ -55,13 +57,14 @@ app.get('/signup', (req, res) => {
     res.render('signup');
 });
 
-// Signup POST route
+// Signup POST route with password hashing
 app.post('/signup', async (req, res) => {
     try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10); // Hash the password
         const user = new User({
             username: req.body.username,
             email: req.body.email,
-            password: req.body.password
+            password: hashedPassword // Store hashed password in the database
         });
         await user.save();
         res.redirect('/login');
@@ -71,18 +74,25 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// Login POST route
+// Login POST route with password comparison
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email: email, password: password });
+        const user = await User.findOne({ email: email });
         if (user) {
-            // Successful login, store user ID in session
-            req.session.userId = user._id;
-            res.redirect('/');
+            // Compare passwords using bcrypt
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (passwordMatch) {
+                // Successful login, store user ID in session
+                req.session.userId = user._id;
+                res.redirect('/');
+            } else {
+                // Invalid password, redirect back to login page with error message
+                res.render('login', { errorMessage: 'Invalid email or password' });
+            }
         } else {
-            // Invalid credentials, redirect back to login page with error message
-            res.render('login', { errorMessage: 'Invalid email or password' }); // Pass errorMessage
+            // User not found, redirect back to login page with error message
+            res.render('login', { errorMessage: 'Invalid email or password' });
         }
     } catch (error) {
         console.error(error);
@@ -90,7 +100,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Logout route
+// Logout route with error handling
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -102,7 +112,7 @@ app.post('/logout', (req, res) => {
     });
 });
 
-// POST route to create short URLs
+// POST route to create short URLs with schema validation
 app.post('/shortUrls', async (req, res) => {
     try {
         let shortUrlData = {
@@ -123,9 +133,7 @@ app.post('/shortUrls', async (req, res) => {
     }
 });
 
-
-
-// Redirect route for short URLs
+// Redirect route for short URLs with input sanitization
 app.get('/:shortUrl', async (req, res) => {
     const shortUrl = await ShortUrl.findOne({ short: req.params.shortUrl });
     if (shortUrl == null) return res.sendStatus(404);
