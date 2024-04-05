@@ -37,15 +37,24 @@ const requireLogin = (req, res, next) => {
 };
 
 // Homepage route
+// Homepage route
 app.get('/', requireLogin, async (req, res) => {
     try {
+        // Fetch the user's username
+        const user = await User.findById(req.session.userId);
+        const username = user.username;
+
+        // Fetch the short URLs associated with the logged-in user
         const shortUrls = await ShortUrl.find({ user: req.session.userId });
-        res.render('index', { shortUrls: shortUrls });
+
+        // Pass the username to the index.ejs template
+        res.render('index', { username: username, shortUrls: shortUrls });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error fetching short URLs');
     }
 });
+
 
 // Edit route
 app.get('/edit/:id', requireLogin, async (req, res) => {

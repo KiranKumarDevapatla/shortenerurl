@@ -12,12 +12,23 @@
             top: 10px;
             right: 10px;
         }
+        .welcome-container {
+    text-align: center; 
+    margin-top: 50px; 
+}
+
+.welcome-message {
+    font-size: 24px;
+    color: #333; 
+    font-family: Arial, sans-serif; 
+}
+
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#">URL Shrinker</a>
+            <a class="navbar-brand" href="#">URL Shrinker </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -33,6 +44,10 @@
             </div>
         </div>
     </nav>
+    <div class="welcome-container">
+        <h1 class="welcome-message">Welcome <%= username %></h1>
+    </div>
+    
     
     <div class="container mt-5">
         <form action="/shortUrls" method="POST" class="mb-3">
@@ -87,6 +102,7 @@
             <% }) %>
         </div>
     </div>
+    
 
     <script>
         function downloadQR(url) {
