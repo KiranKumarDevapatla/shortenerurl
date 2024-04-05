@@ -47,6 +47,20 @@ app.get('/', requireLogin, async (req, res) => {
     }
 });
 
+// Edit route
+app.get('/edit/:id', requireLogin, async (req, res) => {
+    try {
+        const shortUrl = await ShortUrl.findById(req.params.id);
+        if (!shortUrl) {
+            return res.status(404).send('Short URL not found');
+        }
+        res.render('edit', { shortUrl: shortUrl });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error fetching short URL for editing');
+    }
+});
+
 // Login route
 app.get('/login', (req, res) => {
     res.render('login', { errorMessage: null }); // Pass errorMessage as null
@@ -130,6 +144,56 @@ app.post('/shortUrls', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Error creating short URL');
+    }
+});
+
+// Edit route to render edit URL form
+app.get('/edit/:id', requireLogin, async (req, res) => {
+    try {
+        const shortUrl = await ShortUrl.findById(req.params.id);
+        res.render('edit', { shortUrl: shortUrl });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error rendering edit page');
+    }
+});
+
+// Update route to update short URL
+app.post('/edit/:id', requireLogin, async (req, res) => {
+    try {
+        await ShortUrl.findByIdAndUpdate(req.params.id, { full: req.body.fullUrl });
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error updating short URL');
+    }
+});
+
+// Update route for short URLs
+app.post('/shortUrls/:id', async (req, res) => {
+    const { fullUrl, customAlias } = req.body;
+    try {
+        const shortUrl = await ShortUrl.findById(req.params.id);
+        if (!shortUrl) {
+            return res.status(404).send('Short URL not found');
+        }
+        shortUrl.full = fullUrl;
+        shortUrl.short = customAlias;
+        await shortUrl.save();
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error updating short URL');
+    }
+});
+// Delete route to delete short URL
+app.delete('/shortUrls/:id', requireLogin, async (req, res) => {
+    try {
+        await ShortUrl.findByIdAndDelete(req.params.id);
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error deleting short URL');
     }
 });
 
